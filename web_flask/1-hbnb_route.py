@@ -1,23 +1,27 @@
 #!/usr/bin/python3
-"""simple flask app
-"""
+"""script that starts a Flask web application
+/hbnb: display “HBNB””"""
+
+
 from flask import Flask
+
+# Instanciating flask on app
 app = Flask(__name__)
 
 
-@app.route("/", strict_slashes=False)
-def hello_hbnb():
-    """root route
-    """
-    return "Hello HBNB!"
+# Routes and decorator
+@app.route('/', strict_slashes=False)
+def homepage():
+    """display “Hello HBNB!"""
+    return("Hello HBNB!")
 
 
-@app.route("/hbnb", strict_slashes=False)
+@app.route('/hbnb', strict_slashes=False)
 def hbnb():
-    """hbnb
-    """
-    return "HBNB"
+    """display HBNB"""
+    return("HBNB")
 
 
+# Running flask
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

@@ -1,43 +1,37 @@
 #!/usr/bin/python3
-"""script that starts a Flask web application
-/hbnb: display “HBNB””"""
-
-
+"""Module defining the message on the /python page"""
 from flask import Flask
-from sys import argv
 
-# Instanciating flask on app
+
 app = Flask(__name__)
 
 
-# Routes and decorator
 @app.route('/', strict_slashes=False)
-def homepage():
-    """display “Hello HBNB!"""
-    return("Hello HBNB!")
+def index():
+    """return the message for the index"""
+    return 'Hello HBNB!'
 
 
 @app.route('/hbnb', strict_slashes=False)
 def hbnb():
-    """display HBNB"""
-    return("HBNB")
+    """return the message for /hbnb"""
+    return 'HBNB'
 
 
 @app.route('/c/<text>', strict_slashes=False)
-def c(text):
-    """display C <text>"""
+def message_c(text):
+    """custom message for c"""
     text = text.replace('_', ' ')
-    return ("C " + text)
+    return 'C {}'.format(text)
 
 
-@app.route('/python/', strict_slashes=False)
 @app.route('/python/<text>', strict_slashes=False)
-def python(text='is cool'):
-    """display Python <text>"""
+@app.route('/python', strict_slashes=False)
+def message_python(text='is cool'):
+    """custom message for python"""
     text = text.replace('_', ' ')
-    return ("Python " + text)
+    return 'Python {}'.format(text)
 
 
-# Running flask
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

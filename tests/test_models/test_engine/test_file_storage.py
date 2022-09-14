@@ -6,6 +6,7 @@ from models import storage
 import os
 
 
+@unittest.skipIf(os.getenv('HBNB_TYPE_STORAGE') == 'db', "Not FileStorage")
 class test_fileStorage(unittest.TestCase):
     """ Class to test the file storage method """
 
@@ -21,7 +22,7 @@ class test_fileStorage(unittest.TestCase):
         """ Remove storage file at end of tests """
         try:
             os.remove('file.json')
-        except FileNotFoundError:
+        except Exception:
             pass
 
     def test_obj_list_empty(self):
@@ -31,9 +32,10 @@ class test_fileStorage(unittest.TestCase):
     def test_new(self):
         """ New object is correctly added to __objects """
         new = BaseModel()
+        storage.new(new)
         for obj in storage.all().values():
             temp = obj
-            self.assertTrue(temp is obj)
+        self.assertTrue(temp is obj)
 
     def test_all(self):
         """ __objects is properly returned """
@@ -63,11 +65,19 @@ class test_fileStorage(unittest.TestCase):
     def test_reload(self):
         """ Storage file is successfully loaded to __objects """
         new = BaseModel()
+        storage.new(new)
         storage.save()
         storage.reload()
         for obj in storage.all().values():
             loaded = obj
-            self.assertEqual(new.to_dict()['id'], loaded.to_dict()['id'])
+        self.assertEqual(new.to_dict()['id'], loaded.to_dict()['id'])
+
+    def test_reload_empty(self):
+        """ Load from an empty file """
+        with open('file.json', 'w') as f:
+            pass
+        with self.assertRaises(ValueError):
+            storage.reload()
 
     def test_reload_from_nonexistent(self):
         """ Nothing happens if file does not exist """
@@ -90,13 +100,13 @@ class test_fileStorage(unittest.TestCase):
     def test_key_format(self):
         """ Key is properly formatted """
         new = BaseModel()
+        storage.new(new)
         _id = new.to_dict()['id']
         for key in storage.all().keys():
             temp = key
-            self.assertEqual(temp, 'BaseModel' + '.' + _id)
+        self.assertEqual(temp, 'BaseModel' + '.' + _id)
 
     def test_storage_var_created(self):
         """ FileStorage object storage created """
         from models.engine.file_storage import FileStorage
-        print(type(storage))
         self.assertEqual(type(storage), FileStorage)

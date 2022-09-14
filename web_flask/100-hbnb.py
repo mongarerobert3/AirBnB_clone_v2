@@ -1,40 +1,41 @@
 #!/usr/bin/python3
-"""0x04. AirBnB clone - Web framework, task 12. HBNB is alive!
+"""hbnb filter
 """
-from flask import Flask, render_template
-from os import environ
+from flask import Flask, render_template, Markup
 from models import storage
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-from models.place import Place
-from models.user import User
-
-
+import sys
 app = Flask(__name__)
-environ['FLASK_ENV'] = 'development'
 
 
 @app.teardown_appcontext
-def states_list_teardown(self):
-    """ Ensures SQLAlchemy session opened to serve dynamic content for HTML
-    templates is closed after serving.
+def shutdown_session(exception=None):
+    """reload storage after each request
     """
     storage.close()
 
 
-@app.route('/hbnb', strict_slashes=False)
-def hbnb():
-    """ Requests dicts of `State`, `City`, `Amenity`, and `Place` objects,
-    which then populate the HTML template served to '/hbnb_filters'.
+@app.route("/hbnb", strict_slashes=False)
+def states_cities_list():
+    """pass states and cities sorted by name
+    and amenities
     """
-    return render_template('100-hbnb.html',
-                           states=storage.all(State),
-                           cites=storage.all(City),
-                           amenities=storage.all(Amenity),
-                           places=storage.all(Place),
-                           users=storage.all(User))
+    states = list(storage.all("State").values())
+    states.sort(key=lambda x: x.name)
+    for state in states:
+        state.cities.sort(key=lambda x: x.name)
+    amenities = list(storage.all("Amenity").values())
+    amenities.sort(key=lambda x: x.name)
+    places = list(storage.all("Place").values())
+    places.sort(key=lambda x: x.name)
+    for place in places:
+        place.description = Markup(place.description)
+    return render_template(
+        '100-hbnb.html',
+        states=states,
+        amenities=amenities,
+        places=places
+    )
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='5000')
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)

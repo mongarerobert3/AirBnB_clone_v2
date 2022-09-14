@@ -1,35 +1,35 @@
 #!/usr/bin/python3
-"""0x04. AirBnB clone - Web framework, task 11. HBNB filters
+"""hbnb filter
 """
 from flask import Flask, render_template
-from os import environ
 from models import storage
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-
 app = Flask(__name__)
-environ['FLASK_ENV'] = 'development'
 
 
 @app.teardown_appcontext
-def states_list_teardown(self):
-    """ Ensures SQLAlchemy session opened to serve dynamic content for HTML
-    templates is closed after serving.
+def shutdown_session(exception=None):
+    """reload storage after each request
     """
     storage.close()
 
 
-@app.route('/hbnb_filters', strict_slashes=False)
-def hbnb_filters():
-    """ Requests dicts of `State`, `City`, and `Amenity` objects, which then
-    populate the HTML template served to '/hbnb_filters'.
+@app.route("/hbnb_filters", strict_slashes=False)
+def states_cities_list():
+    """pass states and cities sorted by name
+    and amenities
     """
-    return render_template('10-hbnb_filters.html',
-                           states=storage.all(State),
-                           cites=storage.all(City),
-                           amenities=storage.all(Amenity))
+    states = list(storage.all("State").values())
+    states.sort(key=lambda x: x.name)
+    for state in states:
+        state.cities.sort(key=lambda x: x.name)
+    amenities = list(storage.all("Amenity").values())
+    amenities.sort(key=lambda x: x.name)
+    return render_template(
+        '10-hbnb_filters.html',
+        states=states,
+        amenities=amenities
+    )
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='5000')
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)

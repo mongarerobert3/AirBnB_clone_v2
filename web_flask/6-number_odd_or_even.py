@@ -1,70 +1,58 @@
 #!/usr/bin/python3
-"""0x04. AirBnB clone - Web framework, task 6. Odd or even?
+"""simple flask app
 """
 from flask import Flask, render_template
-from os import environ
-
 app = Flask(__name__)
-environ['FLASK_ENV'] = 'development'
 
 
-@app.route('/', strict_slashes=False)
-def index():
-    """Test method to output simple greeting on localhost port 5000,
-    `/` path.
+@app.route("/", strict_slashes=False)
+def hello_hbnb():
+    """root route
     """
-    return 'Hello HBNB!'
+    return "Hello HBNB!"
 
 
-@app.route('/hbnb', strict_slashes=False)
+@app.route("/hbnb", strict_slashes=False)
 def hbnb():
-    """Test method to output simple message on localhost port 5000,
-    `/hbnb` path.
+    """hbnb
     """
-    return 'HBNB'
+    return "HBNB"
 
 
-@app.route('/c/<text>', strict_slashes=False)
-def c_subpath(text):
-    """Test method to output simple message on localhost port 5000,
-    `/c/` path, converting subpaths into message text.
+@app.route("/c/<text>", strict_slashes=False)
+def cisfun(text):
+    """c what
     """
-    return ' '.join(['C', text.replace('_', ' ')])
+    return "C {}".format(text.replace('_', ' '))
 
 
-@app.route('/python/', strict_slashes=False)
-@app.route('/python/<text>', strict_slashes=False)
-def python_subpath(text='is cool'):
-    """Test method to output simple message on localhost port 5000,
-    `/python/` path, converting subpaths into message text, with
-    a default string.
+@app.route("/python/", strict_slashes=False)
+@app.route("/python/<text>", strict_slashes=False)
+def pythoniscool(text='is cool'):
+    """python is cool
     """
-    return ' '.join(['Python', text.replace('_', ' ')])
+    return "Python {}".format(text.replace('_', ' '))
 
 
-@app.route('/number/<int:n>', strict_slashes=False)
-def number(n):
-    """Test method to output simple message on localhost port 5000,
-    `/number/` path, only if subpath is an integer.
+@app.route("/number/<int:n>", strict_slashes=False)
+def intnumber(n):
+    """accept integer
     """
-    return '{} is a number'.format(n)
+    return "{} is a number".format(n)
 
 
-@app.route('/number_template/<int:n>', strict_slashes=False)
-def number_template(n):
-    """Test method to output HTML template on localhost port 5000,
-    `/number_template/` path, only if subpath is an integer.
+@app.route("/number_template/<int:n>", strict_slashes=False)
+def int_template(n):
+    """only display when n is integer
     """
-    return render_template('5-number.html', n=n)
+    return render_template('5-number.html', number=n)
 
 
-@app.route('/number_odd_or_even/<int:n>', strict_slashes=False)
-def number_odd_or_even(n):
-    """Test method to output HTML template on localhost port 5000,
-    `/number_odd_or_even/` path, only if subpath is an integer.
+@app.route("/number_odd_or_even/<int:n>", strict_slashes=False)
+def odd_or_even(n):
+    """only display when n is integer
     """
-    return render_template('6-number_odd_or_even.html', n=n)
+    return render_template('6-number_odd_or_even.html', number=n)
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='5000')
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)

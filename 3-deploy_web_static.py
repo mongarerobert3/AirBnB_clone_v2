@@ -1,68 +1,67 @@
 #!/usr/bin/python3
-""" 0x03. AirBnB clone - Deploy static, task 3. Full deployment
+"""pack and deploy content to server
 """
-from fabric.api import local, env, put, run
-from os import path, makedirs
+from fabric.api import local, env, run, put
 from datetime import datetime
-
-env.hosts = ['34.75.227.236', '54.234.168.105']
+import os
+env.hosts = ['35.231.156.161', '34.73.64.44']
 env.user = 'ubuntu'
 
 
 def do_pack():
-    """ Generates a .tgz archive from the contents `web_static/` in AirBnB clone
-    repo.
-
-    Retruns:
-        (str): full path from current directory to `.tgz` archive created in
-    `versions/`, or `None` on failure
+    """pack all content within web_static
+    into a .tgz archive
+    The archive will be put in versions/
     """
-    if not path.isdir("./versions"):
-        makedirs("./versions")
-
-    now = datetime.now().strftime('%Y%m%d%H%M%S')
-    local('tar -cvzf versions/web_static_{}.tgz web_static/'.format(now))
-
-    if not path.exists('./versions/web_static_{}.tgz'.format(now)):
-        return None
-    return path.realpath('./versions/web_static_{}.tgz'.format(now))
+    if not os.path.exists("versions"):
+        local("mkdir versions")
+    now = datetime.now()
+    name = "versions/web_static_{}.tgz".format(
+        now.strftime("%Y%m%d%H%M%S")
+    )
+    cmd = "tar -cvzf {} {}".format(name, "web_static")
+    result = local(cmd)
+    if not result.failed:
+        return name
 
 
 def do_deploy(archive_path):
-    """ Distributes a .tgz archive from the contents of `web_static/` in AirBnB
-    clone repo to the web servers
-
-    Retruns:
-        (bool): `True` if all operations successful, `False` otherwise
+    """deploy package to remote server
+    Arguments:
+        archive_path: path to archive to deploy
     """
-    if not path.exists(archive_path) or archive_path is None:
+    if not archive_path or not os.path.exists(archive_path):
         return False
-
-    f_name = path.basename(archive_path)
-    d_name = f_name.split('.')[0]
-
-    put(local_path=archive_path, remote_path='/tmp/')
-    run('mkdir -p /data/web_static/releases/{}/'.format(d_name))
-    run('tar -xzf /tmp/{} -C /data/web_static/releases/{}/'.format(
-        f_name, d_name))
-    run('rm /tmp/{}'.format(f_name))
-    run('mv /data/web_static/releases/{}/web_static/* '.format(d_name) +
-        '/data/web_static/releases/{}/'.format(d_name))
-    run('rm -rf /data/web_static/releases/{}/web_static'.format(d_name))
-    run('rm -rf /data/web_static/current')
-    run('ln -s /data/web_static/releases/{}/ /data/web_static/current'.format(
-        d_name))
-    return True
+    put(archive_path, '/tmp')
+    ar_name = archive_path[archive_path.find("/") + 1: -4]
+    try:
+        run('mkdir -p /data/web_static/releases/{}/'.format(ar_name))
+        run('tar -xzf /tmp/{}.tgz -C /data/web_static/releases/{}/'.format(
+                ar_name, ar_name
+        ))
+        run('rm /tmp/{}.tgz'.format(ar_name))
+        run('mv /data/web_static/releases/{}/web_static/* \
+            /data/web_static/releases/{}/'.format(
+                ar_name, ar_name
+        ))
+        run('rm -rf /data/web_static/releases/{}/web_static'.format(
+            ar_name
+        ))
+        run('rm -rf /data/web_static/current')
+        run('ln -s /data/web_static/releases/{}/ \
+            /data/web_static/current'.format(
+            ar_name
+        ))
+        print("New version deployed!")
+        return True
+    except:
+        return False
 
 
 def deploy():
-    """ First generates a .tgz archive from current contents of `web_static/`,
-    then deploys it to update the same dir in two remote web servers.
-
-    Retruns:
-        (bool): `True` if all operations successful, `False` otherwise
+    """pack web_static content and deploy it to web servers
     """
-    path = do_pack()
-    if path is None:
-        return False
-    return(do_deploy(path))
+    pack = do_pack()
+    if pack:
+        return do_deploy(pack)
+    return False

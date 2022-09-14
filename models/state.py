@@ -1,33 +1,31 @@
 #!/usr/bin/python3
-""" 0x02. AirBnB clone - MySQL, task 6. DBStorage - States and Cities """
+"""This is the state class"""
+from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
-from .city import City
-from .base_model import BaseModel, Base
-from os import getenv
+from os import environ as env
+import models
 
 
 class State(BaseModel, Base):
-    """Defines attributes for `State` as it inherits from `BaseModel`,
-    and ORM properties in relation to table `states`.
+    """This is the class for State
     Attributes:
-        name (Column): name of state, string of max 128 chars
-        cities (relationship): one-to-many-association to `City`
+        __tablename__: table name
+        name: input name
+        cities: relation to cities table
     """
-    __tablename__ = 'states'
+    __tablename__ = "states"
     name = Column(String(128), nullable=False)
-    cities = relationship("City", cascade="all, delete-orphan",
-                          backref="state")
+    cities = relationship("City", cascade="all, delete", backref="state")
 
-    if getenv('HBNB_TYPE_STORAGE') != 'db':
+    if env.get('HBNB_TYPE_STORAGE') != 'db':
         @property
         def cities(self):
-            """ Getter for list of all `City` objects when in file storage
-            mode.
+            """get all cities with the current state id
+            from filestorage
             """
-            from . import storage
-            cities = []
-            for city in storage.all(City).values():
-                if city.state_id == self.id:
-                    cities.append(city)
-            return cities
+            l = [
+                v for k, v in models.storage.all(models.City).items()
+                if v.state_id == self.id
+            ]
+            return (l)

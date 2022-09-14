@@ -1,36 +1,32 @@
 #!/usr/bin/python3
-"""Starts a Flask web application"""
-
+"""0x04. AirBnB clone - Web framework, task 10. States and State
+"""
+from flask import Flask, render_template
+from os import environ
 from models import storage
 from models.state import State
-from flask import Flask
-from flask import render_template
+
 app = Flask(__name__)
+environ['FLASK_ENV'] = 'development'
+
+
+@app.teardown_appcontext
+def states_list_teardown(self):
+    """ Ensures SQLAlchemy session opened to serve dynamic content for HTML
+    templates is closed after serving.
+    """
+    storage.close()
 
 
 @app.route('/states', strict_slashes=False)
 @app.route('/states/<id>', strict_slashes=False)
-def states_1(id=None):
-    """Returns a rendered html template:
-    if id is given, list the cities of that State
-    else, list all States
+def states(id=None):
+    """ Requests list of `State`s ordered by name, which populates HTML
+    template served to '/cities_by_states'.
     """
-    states = storage.all('State')
-    if id:
-        key = '{}.{}'.format('State', id)
-        if key in states:
-            states = states[key]
-        else:
-            states = None
-    else:
-        states = storage.all('State').values()
-    return render_template('9-states.html', states=states, id=id)
+    return render_template('9-states.html', id=id,
+                           states=storage.all(State))
 
-
-@app.teardown_appcontext
-def teardown(self):
-    """Removes the current SQLAlchemy Session"""
-    storage.close()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port='5000')

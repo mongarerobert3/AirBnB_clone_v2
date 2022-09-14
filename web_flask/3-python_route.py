@@ -1,38 +1,45 @@
 #!/usr/bin/python3
-"""Starts a Flask web application"""
-
+"""0x04. AirBnB clone - Web framework, task 3. Python is cool!
+"""
 from flask import Flask
+from os import environ
+
 app = Flask(__name__)
+environ['FLASK_ENV'] = 'development'
 
 
 @app.route('/', strict_slashes=False)
-def hello_holberton():
-    """Returns a string at the root route"""
+def index():
+    """Test method to output simple greeting on localhost port 5000,
+    `/` path.
+    """
     return 'Hello HBNB!'
 
 
 @app.route('/hbnb', strict_slashes=False)
 def hbnb():
-    """Returns a string at the /hbnb route"""
+    """Test method to output simple message on localhost port 5000,
+    `/hbnb` path.
+    """
     return 'HBNB'
 
 
 @app.route('/c/<text>', strict_slashes=False)
-def cisfun(text):
-    """Returns a string at the /c/<text> route,
-    expands the <text> variable"""
-    new = text.replace('_', ' ')
-    return 'C %s' % new
+def c_subpath(text):
+    """Test method to output simple message on localhost port 5000,
+    `/c/` path, converting subpaths into message text.
+    """
+    return ' '.join(['C', text.replace('_', ' ')])
 
 
-@app.route('/python', defaults={'text': 'is cool'}, strict_slashes=False)
+@app.route('/python/', strict_slashes=False)
 @app.route('/python/<text>', strict_slashes=False)
-def pythoniscool(text):
-    """Returns a string at the /python route, with a default text
-    of 'is cool', or the expansion of <text>"""
-    new = text.replace('_', ' ')
-    return 'Python %s' % new
+def python_subpath(text='is cool'):
+    """Test method to output simple message on localhost port 5000,
+    `/python/` path, converting subpaths into message text.
+    """
+    return ' '.join(['Python', text.replace('_', ' ')])
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port='5000')

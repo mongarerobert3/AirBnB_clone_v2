@@ -1,14 +1,19 @@
 #!/usr/bin/python3
-"""Starts a Flask web application"""
-
+"""0x04. AirBnB clone - Web framework, task 0. Hello Flask!
+"""
 from flask import Flask
+from os import environ
+
 app = Flask(__name__)
+environ['FLASK_ENV'] = 'development'
 
 
 @app.route('/', strict_slashes=False)
-def hello_holberton():
-    """Returns a string at the root route"""
+def hello():
+    """Test method to output simple greeting on localhost port 5000
+    """
     return 'Hello HBNB!'
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port='5000')

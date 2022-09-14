@@ -1,78 +1,68 @@
 #!/usr/bin/python3
+""" 0x03. AirBnB clone - Deploy static, task 3. Full deployment
 """
-do_pack(): Generates a .tgz archive from the
-contents of the web_static folder
-do_deploy(): Distributes an archive to a web server
-deploy (): Creates and distributes an archive to a web server
-"""
-
-from fabric.operations import local, run, put
+from fabric.api import local, env, put, run
+from os import path, makedirs
 from datetime import datetime
-import os
-from fabric.api import env
-import re
 
-
-env.hosts = ['35.190.176.186', '35.196.156.157']
+env.hosts = ['34.75.227.236', '54.234.168.105']
+env.user = 'ubuntu'
 
 
 def do_pack():
-    """Function to compress files in an archive"""
-    local("mkdir -p versions")
-    filename = "versions/web_static_{}.tgz".format(datetime.strftime(
-                                                   datetime.now(),
-                                                   "%Y%m%d%H%M%S"))
-    result = local("tar -cvzf {} web_static"
-                   .format(filename))
-    if result.failed:
+    """ Generates a .tgz archive from the contents `web_static/` in AirBnB clone
+    repo.
+
+    Retruns:
+        (str): full path from current directory to `.tgz` archive created in
+    `versions/`, or `None` on failure
+    """
+    if not path.isdir("./versions"):
+        makedirs("./versions")
+
+    now = datetime.now().strftime('%Y%m%d%H%M%S')
+    local('tar -cvzf versions/web_static_{}.tgz web_static/'.format(now))
+
+    if not path.exists('./versions/web_static_{}.tgz'.format(now)):
         return None
-    return filename
+    return path.realpath('./versions/web_static_{}.tgz'.format(now))
 
 
 def do_deploy(archive_path):
-    """Function to distribute an archive to a server"""
-    if not os.path.exists(archive_path):
+    """ Distributes a .tgz archive from the contents of `web_static/` in AirBnB
+    clone repo to the web servers
+
+    Retruns:
+        (bool): `True` if all operations successful, `False` otherwise
+    """
+    if not path.exists(archive_path) or archive_path is None:
         return False
-    rex = r'^versions/(\S+).tgz'
-    match = re.search(rex, archive_path)
-    filename = match.group(1)
-    res = put(archive_path, "/tmp/{}.tgz".format(filename))
-    if res.failed:
-        return False
-    res = run("mkdir -p /data/web_static/releases/{}/".format(filename))
-    if res.failed:
-        return False
-    res = run("tar -xzf /tmp/{}.tgz -C /data/web_static/releases/{}/"
-              .format(filename, filename))
-    if res.failed:
-        return False
-    res = run("rm /tmp/{}.tgz".format(filename))
-    if res.failed:
-        return False
-    res = run("mv /data/web_static/releases/{}"
-              "/web_static/* /data/web_static/releases/{}/"
-              .format(filename, filename))
-    if res.failed:
-        return False
-    res = run("rm -rf /data/web_static/releases/{}/web_static"
-              .format(filename))
-    if res.failed:
-        return False
-    res = run("rm -rf /data/web_static/current")
-    if res.failed:
-        return False
-    res = run("ln -s /data/web_static/releases/{}/ /data/web_static/current"
-              .format(filename))
-    if res.failed:
-        return False
-    print('New version deployed!')
+
+    f_name = path.basename(archive_path)
+    d_name = f_name.split('.')[0]
+
+    put(local_path=archive_path, remote_path='/tmp/')
+    run('mkdir -p /data/web_static/releases/{}/'.format(d_name))
+    run('tar -xzf /tmp/{} -C /data/web_static/releases/{}/'.format(
+        f_name, d_name))
+    run('rm /tmp/{}'.format(f_name))
+    run('mv /data/web_static/releases/{}/web_static/* '.format(d_name) +
+        '/data/web_static/releases/{}/'.format(d_name))
+    run('rm -rf /data/web_static/releases/{}/web_static'.format(d_name))
+    run('rm -rf /data/web_static/current')
+    run('ln -s /data/web_static/releases/{}/ /data/web_static/current'.format(
+        d_name))
     return True
 
 
 def deploy():
-    """Creates and distributes an archive to a web server"""
-    filepath = do_pack()
-    if filepath is None:
+    """ First generates a .tgz archive from current contents of `web_static/`,
+    then deploys it to update the same dir in two remote web servers.
+
+    Retruns:
+        (bool): `True` if all operations successful, `False` otherwise
+    """
+    path = do_pack()
+    if path is None:
         return False
-    d = do_deploy(filepath)
-    return d
+    return(do_deploy(path))
